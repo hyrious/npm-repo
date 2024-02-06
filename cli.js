@@ -66,7 +66,10 @@ sade(pkg.name + ' <pkgname>')
       throw new Error(`Cannot handle repository URL "${githubRepoUrl}"`)
 
     const suffix = info.folder ? `/${info.folder}` : ''
-    const pattern = mod.guessTagPattern(tags, info.folder ? [info.folder, pkg.version] : [pkg.version])
+    const hints = [pkg.version, pkgname + '@' + pkg.version]
+    if (info.folder)
+      hints.push(info.folder)
+    const pattern = mod.guessTagPattern(tags, hints)
 
     if (opts.compare) {
       const c = opts.compare, twoDots = !c.includes('...')

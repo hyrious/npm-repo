@@ -46,7 +46,7 @@ export function guessTagPattern(tags, hints = []) {
     const pat = tag.slice(0, m.index) + '{}' + tag.slice(m.index + m[0].length)
     patterns[pat] = (patterns[pat] || 0) + 1
     if (hints.length > 0) for (const hint of hints) if (tag.includes(hint))
-      patterns[pat] += 10
+      patterns[pat] += tag == hint ? 1000 : 10
   }
 
   let max = 0, ret = 'v{}'
