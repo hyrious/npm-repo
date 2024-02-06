@@ -1,0 +1,31 @@
+{
+  "name": "@hyrious/npm-repo",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "npm-repo, but resolves GitHub tags",
+  "author": "hyrious <hyrious@outlook.com>",
+  "license": "MIT",
+  "repository": "hyrious/npm-repo",
+  "keywords": [
+    "npm",
+    "npm-repo"
+  ],
+  "sideEffects": false,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "bin": "cli.js",
+  "files": [
+    "*.js",
+    "index.d.ts"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "hosted-git-info": "^7.0.1",
+    "sade": "^1.8.1"
+  },
+  "devDependencies": {
+    "undici": "^6.6.0"
+  }
+}
