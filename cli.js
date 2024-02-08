@@ -50,7 +50,7 @@ sade(pkg.name + ' <pkgname>')
 
       tags = await mod.githubTags(info.repo)
       if (tags.length == 0)
-        throw new Error(`No tags found in repository "${pkgname}"`)
+        throw new Error(`No tags found in repository "${info.repo}"`)
 
       cache[pkgname] = { t: Date.now(), pkg, tags }
       fs.mkdirSync(cacheDir, { recursive: true })
