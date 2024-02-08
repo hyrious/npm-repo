@@ -24,8 +24,5 @@
   "dependencies": {
     "hosted-git-info": "^7.0.1",
     "sade": "^1.8.1"
-  },
-  "devDependencies": {
-    "undici": "^6.6.0"
   }
 }
