@@ -72,8 +72,8 @@ sade(pkg.name + ' <pkgname>')
     const pattern = mod.guessTagPattern(tags, hints)
 
     if (opts.compare) {
-      const c = opts.compare, twoDots = !c.includes('...')
-      const parts = twoDots ? c.split('..') : c.split('...')
+      const c = opts.compare, threeDots = c.includes('...') || !c.includes('..')
+      const parts = threeDots ? c.split('...') : c.split('..')
       if (parts.length == 1)
         parts.push('latest')
       const compare = []
@@ -90,7 +90,7 @@ sade(pkg.name + ' <pkgname>')
             throw new Error(`Failed to resolve "${spec}" in "${pkgname}"`)
         }
       }
-      const spec = compare.map(v => pattern.replace('{}', v)).join(twoDots ? '..' : '...')
+      const spec = compare.map(v => pattern.replace('{}', v)).join(threeDots ? '...' : '..')
       console.log(`https://github.com/${info.repo}/compare/${spec}`)
     }
 
