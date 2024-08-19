@@ -10,16 +10,22 @@ const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url
 sade(pkg.name + ' <pkgname>')
   .version(pkg.version)
   .describe('Get package repository URL')
+  .example('vite')
+  .example('vite --comapre 5.0.11')
+  .example('vite --comapre 5.0.11...latest')
   .option('-c, --compare', 'Prints GitHub URL that compares two versions')
   .option('-l, --list', 'List recent N versions and GitHub URLs', 0)
   .option('--sed', 'Prints "s/.*/v&/"-like SED script', false)
   .option('--template', 'Prints "v{}"-like template string', false)
+  .option('--verbose', 'Prints more output', false)
   .action(async function (pkgname, opts) {
     let cache = {} // { [pkgname]: { t: 0, pkg: {...}, tags: [...] } }
 
     const cacheDir = path.resolve(os.tmpdir(), 'hyrious-npm-repo')
     const cachePath = path.resolve(cacheDir, 'cache.json')
     const cacheTTL = 30 * 60_000 // 30 minutes
+
+    if (opts.verbose) mod.setVerbose(true)
 
     if (fs.existsSync(cachePath) && Date.now() - fs.lstatSync(cachePath).mtimeMs < cacheTTL) {
       cache = JSON.parse(fs.readFileSync(cachePath, 'utf8'))
@@ -80,7 +86,7 @@ sade(pkg.name + ' <pkgname>')
       for (const spec of parts) {
         if (spec == 'latest')
           compare.push(pkg.version)
-        else if (mod.semver.test(spec))
+        else if (mod.isValidVersion(spec))
           compare.push(spec)
         else {
           const version = await mod.resolvedVersion(pkgname, spec)

@@ -1,7 +1,17 @@
+declare const verbose: boolean;
+
+declare function setVerbose(v: boolean): void;
+
 /**
  * A RegExp to match semver versions. Note that it doesn't match the `v` prefix.
  */
 declare const semver: RegExp;
+
+/**
+ * Test if a string is strictly in the form of `1.2.3-beta.4`.
+ * @param version The version to check.
+ */
+declare function isValidVersion(version: string): boolean;
 
 /**
  * Fetch GitHub tags of some repo. Same as `git ls-remote --tags {repo}`.
@@ -50,4 +60,4 @@ declare function packageJSON(pkgname: string): Promise<any>;
  */
 declare function resolvedVersion(pkgname: string, spec?: string): Promise<string | null>;
 
-export { semver, githubTags, guessTagPattern, githubRepo, parseRepo, packageJSON, resolvedVersion };
+export { verbose, setVerbose, semver, isValidVersion, githubTags, guessTagPattern, githubRepo, parseRepo, packageJSON, resolvedVersion };

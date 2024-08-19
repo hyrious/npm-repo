@@ -1,4 +1,13 @@
-import HostedGitInfo from 'hosted-git-info'
+import repoUrlFromPackage from 'repo-url-from-package'
+
+export let verbose = false
+
+export function setVerbose(v) { verbose = v }
+
+function log(...args) {
+  if (verbose)
+    console.log('(npm-repo)', ...args)
+}
 
 function scan(s, search, end) {
   let i = s.indexOf(search), j = i, result = []
@@ -15,25 +24,34 @@ export async function githubTags(repo) {
     return []
 
   // Try Git Transfer Protocols, it uses less IO
+  log('fetching tags with git transfer protocols')
   const resp = await fetch('https://github.com/' + repo + '/info/refs?service=git-upload-pack').catch(() => null)
   if (resp && resp.ok)
     return scan(await resp.text(), 'refs/tags/', '\n').filter(e => !e.endsWith('^{}'))
-
+  
   // Try restful API
+  log('fetching tags with restful api')
   const resp2 = await fetch('https://api.github.com/repos/' + repo + '/git/refs/tags').catch(() => null)
   if (resp2 && resp2.ok)
     return (await resp2.json()).map(e => e.ref.slice('refs/tags/'.length))
 
   // Give up
+  log('failed to fetch tags')
   return []
 }
 
 // the loose one from 'semver' package, without 'v' prefix
 export const semver = /(\d+)\.(\d+)\.(\d+)(?:-?((?:\d+|\d*[A-Za-z-][\dA-Za-z-]*)(?:\.(?:\d+|\d*[A-Za-z-][\dA-Za-z-]*))*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?/
 
+export function isValidVersion(v) {
+  const m = v.match(semver)
+  return m && m.index == 0 && m[0].length == v.length
+}
+
 // [hints] can be ["0.1.0", "pkgname"] etc, we count how many hints are found
 // in the tags string to increase its weighting.
 export function guessTagPattern(tags, hints = []) {
+  log('guessing tags pattern from', tags, 'with hints', hints)
   if (tags.length == 0)
     return 'v{}'
 
@@ -56,36 +74,8 @@ export function guessTagPattern(tags, hints = []) {
   return ret
 }
 
-const git_plus = /^git\+/
-const dot_git = /\.git$/
-
-// https://github.com/npm/cli/blob/latest/lib/commands/repo.js
 export function githubRepo(pkg) {
-  if (!pkg || typeof pkg != 'object')
-    return ""
-
-  const r = pkg.repository
-  const rurl = !r ? null
-    : typeof r == 'string' ? r
-    : typeof r == 'object' && typeof r.url == 'string' ? r.url
-    : null
-
-  if (!rurl)
-    return ""
-
-  const info = HostedGitInfo.fromUrl(rurl.replace(git_plus, ''))
-  if (info)
-    return info.browse(r.directory)
-
-  try {
-    const { protocol, hostname, pathname } = new URL(rurl)
-    if (!protocol || !hostname)
-      return ""
-    // always use https
-    return 'https://' + hostname + pathname.replace(dot_git, '')
-  } catch {
-    return ""
-  }
+  return repoUrlFromPackage(pkg).url
 }
 
 const https_ = /^https?:\/\//
@@ -117,6 +107,7 @@ export function parseRepo(str) {
 }
 
 export async function packageJSON(pkgname) {
+  log('fetching package.json with unpkg for', pkgname)
   const resp = await fetch(`https://unpkg.com/${pkgname}/package.json`, { signal: AbortSignal.timeout(5000) })
     .catch(err => err.name == 'TimeoutError' ? null : Promise.reject(err))
   if (resp && resp.ok)
@@ -124,6 +115,7 @@ export async function packageJSON(pkgname) {
   if (resp)
     throw new Error(await resp.text())
 
+  log('fetching package.json with esm.sh for', pkgname)
   const resp2 = await fetch(`https://esm.sh/${pkgname}/package.json`)
   if (resp2.ok)
     return resp2.json()
@@ -132,6 +124,7 @@ export async function packageJSON(pkgname) {
 }
 
 export async function resolvedVersion(pkgname, spec = 'latest') {
+  log('resolving version for', pkgname + '@' + spec)
   const resp = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${pkgname}/resolved?specifier=${spec}`)
   if (resp.ok)
     return (await resp.json()).version
