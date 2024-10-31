@@ -14,7 +14,7 @@ sade(pkg.name + ' <pkgname>')
   .example('vite --comapre 5.0.11')
   .example('vite --comapre 5.0.11...latest')
   .option('-c, --compare', 'Prints GitHub URL that compares two versions')
-  .option('-l, --list', 'List recent N versions and GitHub URLs', 0)
+  .option('-l, --list', 'List recent N versions and GitHub URLs  (default 20)')
   .option('--sed', 'Prints "s/.*/v&/"-like SED script', false)
   .option('--template', 'Prints "v{}"-like template string', false)
   .option('--verbose', 'Prints more output', false)
@@ -78,6 +78,10 @@ sade(pkg.name + ' <pkgname>')
     const pattern = mod.guessTagPattern(tags, hints)
 
     if (opts.compare) {
+      if (opts.compare === true) {
+        const { version } = JSON.parse(fs.readFileSync(`node_modules/${pkgname}/package.json`, 'utf8'))
+        opts.compare = version
+      }
       const c = opts.compare, threeDots = c.includes('...') || !c.includes('..')
       const parts = threeDots ? c.split('...') : c.split('..')
       if (parts.length == 1)
@@ -134,4 +138,4 @@ sade(pkg.name + ' <pkgname>')
       console.log(prefix + suffix)
     }
   })
-  .parse(process.argv, { string: ['compare'] })
+  .parse(process.argv)
